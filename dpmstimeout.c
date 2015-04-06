@@ -66,14 +66,18 @@ int main(int argc, char *argv[]) {
 	Display *dis;
 	CARD16 state;
 	int i, delay = 1;
-	int checking[4] = {0, 1, 1, 1};
+	
+	int checking[4];// = {0, 1, 1, 1};
+
+	if (argc > 1)
+		for (i = 0; i < 4; i++) checking[i] = 0;
 
 	for (i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "on") == 0) checking[DPMSModeOn] = 1;
-		if (strcmp(argv[i], "standby") == 0) checking[DPMSModeStandby] = 1;
-		if (strcmp(argv[i], "suspend") == 0) checking[DPMSModeSuspend] = 1;
-		if (strcmp(argv[i], "off") == 0) checking[DPMSModeOff] = 1;
-		if (strcmp(argv[i], "-h") == 0) usage();
+		else if (strcmp(argv[i], "standby") == 0) checking[DPMSModeStandby] = 1;
+		else if (strcmp(argv[i], "suspend") == 0) checking[DPMSModeSuspend] = 1;
+		else if (strcmp(argv[i], "off") == 0) checking[DPMSModeOff] = 1;
+		else usage();
 	}
 
 	dis = XOpenDisplay(NULL);
@@ -83,10 +87,10 @@ int main(int argc, char *argv[]) {
 	}
 
 	while (1) {
+		sleep(delay); /* needs to wait before dpms for some reason. */
 		state = dpmsinfo(dis);
 		if (state < 0) return 1;
-		if (checking[state]) return 0;
-		sleep(delay);
+		if (checking[state]) return 0; 
 	}
 }
 
