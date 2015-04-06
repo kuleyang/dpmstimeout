@@ -28,8 +28,16 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <X11/Xlib.h>
 #include <X11/extensions/dpms.h>
+
+void usage() {
+	printf("Usage: dpmstimeout [on|standby|suspend|off]\n");
+	printf("Checks the DPMS status each second then exits when the state changes to one of the states specified (yes, that means you can specify more than one state). Defaults to standby, suspend and off.\n");
+	printf("Return status 1 if DPMS not avaliable\n");
+	exit(0);
+}
 
 /*
  * Returns -1 if not capable, 0 if not on else one of 
@@ -57,13 +65,15 @@ int dpmsinfo(Display *dis) {
 int main(int argc, char *argv[]) {
 	Display *dis;
 	CARD16 state;
-	int delay = 1;
+	int i, delay = 1;
+	int checking[4] = {0, 1, 1, 1};
 
-	if (argc != 1) {	
-		printf("Usage: %s\n", argv[0]);
-		printf("Checks the DPMS status each second then exits when the screen turns off\n");
-		printf("Return status 2 if DPMS not avaliable\n");
-		return 0;
+	for (i = 1; i < argc; i++) {
+		if (strcmp(argv[i], "on") == 0) checking[DPMSModeOn] = 1;
+		if (strcmp(argv[i], "standby") == 0) checking[DPMSModeStandby] = 1;
+		if (strcmp(argv[i], "suspend") == 0) checking[DPMSModeSuspend] = 1;
+		if (strcmp(argv[i], "off") == 0) checking[DPMSModeOff] = 1;
+		if (strcmp(argv[i], "-h") == 0) usage();
 	}
 
 	dis = XOpenDisplay(NULL);
@@ -72,12 +82,11 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	do {
-		sleep(delay);
+	while (1) {
 		state = dpmsinfo(dis);
-		if (state < 0) return 2;
-	} while (state == DPMSModeOn);
-
-	return 0;
+		if (state < 0) return 1;
+		if (checking[state]) return 0;
+		sleep(delay);
+	}
 }
 

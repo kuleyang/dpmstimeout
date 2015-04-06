@@ -1,7 +1,9 @@
-xtimeout
-========
-xtimeout is a simple program that checks the dpms status each second and exists when DPMS timeout occurs.
+dpmstimeout
+===========
+checks the dpms status each second and exists when the DPMS state is equal to one of the states specified.
 
-For example if you wanted to have slock called when your at DPMS timeout put something like this in your .xinitrc
+Takes arguments 'on', 'standby', 'suspend', 'off'. You can give multiple options. It will exit when the state changes to one of those. Defaults to standby, suspend and off.
 
-	$ (while true; do xtimeout && slock; done) &
+For example if you wanted to have slock called when state changes to standby, suspend or off, put something like this in your .xinitrc
+
+	$ (while true; do dpmstimeout && slock; done) &

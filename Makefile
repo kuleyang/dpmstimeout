@@ -1,10 +1,9 @@
+DESTDIR=
+PREFIX=/usr
 CC=gcc
-DESTDIR=/usr/local/bin
 
-all: xtimeout
+dpmstimeout: dpmstimeout.c
+	$(CC) -o dpmstimeout dpmstimeout.c -lXext -lX11
 
-xtimeout: xtimeout.c
-	$(CC) -o xtimeout xtimeout.c -lXext -lX11
-
-install: xtimeout
-	install -Dm 755 xtimeout $(DESTDIR)/xtimeout
+install: dpmstimeout
+	install -Dm 755 dpmstimeout ${DESTDIR}${PREFIX}/bin/dpmstimeout
