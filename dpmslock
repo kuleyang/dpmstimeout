@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# Waits for dpms suspend then runs slock (if slock has not already been run.
+# I've got dpms set so suspend happens 10 seconds after standby.
+
+(while true; do dpmstimeout suspend && [ -z `pgrep slock` ] && slock; done) &
