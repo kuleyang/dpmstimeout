@@ -33,9 +33,14 @@
 #include <X11/extensions/dpms.h>
 
 void usage() {
-	printf("Usage: dpmstimeout [on|standby|suspend|off]\n");
-	printf("Checks the DPMS status each second then exits when the state changes to one of the states specified (yes, that means you can specify more than one state). Defaults to standby, suspend and off.\n");
-	printf("Return status 1 if DPMS not avaliable\n");
+	printf(
+"Usage: dpmstimeout [-d interval] [on|standby|suspend|off]\n"
+"Checks the DPMS status every interval (defaults to 10) second(s), then\n"
+"exits when the state changes to one of the states specified (yes, that\n"
+"means you can specify more than one state).\n"
+"Defaults to standby, suspend and off.\n"
+"Return status 1 if DPMS not avaliable\n"
+);
 	exit(0);
 }
 
@@ -65,21 +70,38 @@ int dpmsinfo(Display *dis) {
 int main(int argc, char *argv[]) {
 	Display *dis;
 	CARD16 state;
-	int i, delay = 1;
+	int i, is_set;
 	
-	int checking[4];// = {0, 1, 1, 1};
+	int delay = 10;
+	int checking[] = {0, 0, 0, 0};
 
 	if (argc > 1)
 		for (i = 0; i < 4; i++) checking[i] = 0;
 
 	for (i = 1; i < argc; i++) {
-		if (strcmp(argv[i], "on") == 0) checking[DPMSModeOn] = 1;
-		else if (strcmp(argv[i], "standby") == 0) checking[DPMSModeStandby] = 1;
-		else if (strcmp(argv[i], "suspend") == 0) checking[DPMSModeSuspend] = 1;
-		else if (strcmp(argv[i], "off") == 0) checking[DPMSModeOff] = 1;
-		else usage();
+		if (strcmp(argv[i], "on") == 0) {
+			checking[DPMSModeOn] = 1;
+		} else if (strcmp(argv[i], "standby") == 0) {
+			checking[DPMSModeStandby] = 1;
+		} else if (strcmp(argv[i], "suspend") == 0) {
+			checking[DPMSModeSuspend] = 1;
+		} else if (strcmp(argv[i], "off") == 0) {
+			checking[DPMSModeOff] = 1;
+		} else if (i + 1 < argc && strcmp(argv[i], "-d") == 0) {
+			delay = atoi(argv[++i]);
+		} else usage();
 	}
-
+	
+	is_set = 0;
+	for (i = 0; i < 4; i++)
+		if (checking[i] == 1)
+			is_set = 1;
+	
+	if (!is_set) {
+		for (i = 1; i < 4; i++)
+			checking[i] = 1;
+	}
+	
 	dis = XOpenDisplay(NULL);
 	if (!dis) {
 		fprintf(stderr, "Failed to open display\n");
@@ -87,7 +109,8 @@ int main(int argc, char *argv[]) {
 	}
 
 	while (1) {
-		sleep(delay); /* needs to wait before dpms for some reason. */
+ 		/* needs to wait before dpms for some reason. */
+ 		sleep(delay);
 		state = dpmsinfo(dis);
 		if (state < 0) return 1;
 		if (checking[state]) return 0; 
