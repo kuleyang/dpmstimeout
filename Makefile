@@ -3,7 +3,10 @@ PREFIX=/usr
 CC=gcc
 
 dpmstimeout: dpmstimeout.c
-	$(CC) -o dpmstimeout dpmstimeout.c -lXext -lX11
+	$(CC) -o dpmstimeout dpmstimeout.c \
+		-I/usr/X11R6/include \
+		-L/usr/X11R6/lib \
+		-lXext -lX11
 
 .PHONY: clean
 clean:

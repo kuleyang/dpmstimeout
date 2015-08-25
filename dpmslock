@@ -4,5 +4,7 @@
 # I've got dpms set so suspend happens 10 seconds after standby.
 
 (while true; do 
-	dpmstimeout suspend off && [ -z `pidof slock` ] && slock; 
+	dpmstimeout suspend off || continue
+	pid=$(pgrep slock)
+	[ -z "$pid" ] && slock; 
 done) &
